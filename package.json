@@ -1,0 +1,38 @@
+{
+  "name": "ans-c01-project",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "yarn@1.22.22",
+  "description": "AWS ANS-C01 local lab starter built with CDK, TypeScript, and LocalStack.",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "synth": "cdk synth",
+    "localstack:up": "node scripts/localstack-up.js",
+    "localstack:down": "node scripts/localstack-down.js",
+    "cdk:deploy": "node scripts/deploy.js",
+    "cdk:destroy": "node scripts/destroy.js",
+    "verify:all": "node scripts/verify-all.js",
+    "updep": "npm run localstack:up && npm run cdk:deploy",
+    "desdow": "npm run cdk:destroy && npm run localstack:down"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.888.0",
+    "@aws-sdk/client-cloudtrail": "^3.888.0",
+    "@aws-sdk/client-ec2": "^3.888.0",
+    "@aws-sdk/client-ecr": "^3.888.0",
+    "@aws-sdk/client-ecs": "^3.888.0",
+    "@aws-sdk/client-elastic-load-balancing-v2": "^3.888.0",
+    "@aws-sdk/client-s3": "^3.888.0",
+    "aws-cdk-lib": "^2.188.0",
+    "constructs": "^10.4.2",
+    "dotenv": "^16.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "aws-cdk": "^2.1024.0",
+    "aws-cdk-local": "^3.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}
