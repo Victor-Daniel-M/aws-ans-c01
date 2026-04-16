@@ -1,32 +1,27 @@
-import { aws_elasticloadbalancingv2 as elbv2 } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { ExplicitNlb } from "./explicit-nlb";
+import { ExplicitTargetGroup } from "./explicit-target-group";
 
 export interface ExplicitElbProps {
-  loadBalancerName: string;
-  targetGroupName: string;
+  prefix: string;
   subnetIds: string[];
   vpcId: string;
 }
 
 export class ExplicitElb extends Construct {
-  readonly loadBalancer: elbv2.CfnLoadBalancer;
-  readonly targetGroup: elbv2.CfnTargetGroup;
+  readonly loadBalancer: ExplicitNlb;
+  readonly targetGroup: ExplicitTargetGroup;
 
   constructor(scope: Construct, id: string, props: ExplicitElbProps) {
     super(scope, id);
 
-    this.loadBalancer = new elbv2.CfnLoadBalancer(this, "NetworkLoadBalancer", {
-      name: props.loadBalancerName,
-      scheme: "internet-facing",
-      subnets: props.subnetIds,
-      type: "network",
+    this.loadBalancer = new ExplicitNlb(this, "ExplicitNlb", {
+      prefix: props.prefix,
+      subnetIds: props.subnetIds,
     });
 
-    this.targetGroup = new elbv2.CfnTargetGroup(this, "TargetGroup", {
-      name: props.targetGroupName,
-      port: 80,
-      protocol: "TCP",
-      targetType: "ip",
+    this.targetGroup = new ExplicitTargetGroup(this, "ExplicitTargetGroup", {
+      prefix: props.prefix,
       vpcId: props.vpcId,
     });
   }

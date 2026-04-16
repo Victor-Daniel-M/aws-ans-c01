@@ -1,44 +1,33 @@
-import { CfnOutput, Stack, StackProps, aws_cloudtrail as cloudtrail } from "aws-cdk-lib";
+import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { ExplicitCloudTrail } from "../constructs/explicit-cloudtrail";
 import { ExplicitS3 } from "../constructs/explicit-s3";
 import { ExplicitVpc } from "../constructs/explicit-vpc";
+
+export interface FoundationStackProps extends StackProps {
+  prefix: string;
+}
 
 export class FoundationStack extends Stack {
   readonly vpc: ExplicitVpc;
   readonly bucketName: string;
   readonly trailName: string;
 
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: FoundationStackProps) {
     super(scope, id, props);
 
-    const prefix = "ansc01lab";
-    const bucketName = `${prefix}-artifacts`;
-
-    this.vpc = new ExplicitVpc(this, "ExplicitVpc", { prefix });
+    this.vpc = new ExplicitVpc(this, "ExplicitVpc", { prefix: props.prefix });
 
     const bucket = new ExplicitS3(this, "ExplicitS3", {
-      bucketName,
+      prefix: props.prefix,
     });
 
-    this.bucketName = bucketName;
-    this.trailName = `${prefix}-trail`;
-
-    const trail = new cloudtrail.CfnTrail(this, "Trail", {
-      isLogging: true,
-      isMultiRegionTrail: false,
-      s3BucketName: this.bucketName,
-      trailName: this.trailName,
-    });
-    trail.node.addDependency(bucket.bucket);
-
-    new CfnOutput(this, "BucketName", {
-      exportName: `${prefix}-BucketName`,
-      value: this.bucketName,
+    const trail = new ExplicitCloudTrail(this, "ExplicitCloudTrail", {
+      prefix: props.prefix,
+      bucket: bucket.bucket,
     });
 
-    new CfnOutput(this, "TrailName", {
-      exportName: `${prefix}-TrailName`,
-      value: this.trailName,
-    });
+    this.bucketName = bucket.bucketName;
+    this.trailName = trail.trailName;
   }
 }

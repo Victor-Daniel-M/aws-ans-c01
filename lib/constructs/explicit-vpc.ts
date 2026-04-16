@@ -1,6 +1,10 @@
 import { CfnOutput, Fn, Tags } from 'aws-cdk-lib';
 import { aws_ec2 as ec2 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import { ExplicitInternetGateway } from './explicit-internet-gateway';
+import { ExplicitRouteTables } from './explicit-route-tables';
+import { ExplicitSecurityGroups } from './explicit-security-groups';
+import { ExplicitSubnets } from './explicit-subnets';
 
 /*
 Subnetting notes:
@@ -91,150 +95,29 @@ export class ExplicitVpc extends Construct {
       tags: [{ key: 'Name', value: `${props.prefix}-vpc` }],
     });
 
-    // Public subnets
-    const publicSubnet1 = new ec2.CfnSubnet(this, 'PublicSubnetA', {
+    const subnets = new ExplicitSubnets(this, 'ExplicitSubnets', {
+      prefix: props.prefix,
       vpcId: vpc.ref,
-      cidrBlock: '10.42.0.0/24',
-      availabilityZone: 'us-east-1a',
-      mapPublicIpOnLaunch: true,
-      tags: [{ key: 'Name', value: `${props.prefix}-public-a` }],
     });
-    const publicSubnet2 = new ec2.CfnSubnet(this, 'PublicSubnetB', {
+
+    const internetGateway = new ExplicitInternetGateway(this, 'ExplicitInternetGateway', {
+      prefix: props.prefix,
       vpcId: vpc.ref,
-      cidrBlock: '10.42.1.0/24',
-      availabilityZone: 'us-east-1b',
-      mapPublicIpOnLaunch: true,
-      tags: [{ key: 'Name', value: `${props.prefix}-public-b` }],
     });
 
-    // Private subnet
-    const privateSubnet1 = new ec2.CfnSubnet(this, 'PrivateSubnetA', {
+    const routeTables = new ExplicitRouteTables(this, 'ExplicitRouteTables', {
+      prefix: props.prefix,
       vpcId: vpc.ref,
-      cidrBlock: '10.42.10.0/24',
-      availabilityZone: 'us-east-1a',
-      mapPublicIpOnLaunch: false,
-      tags: [{ key: 'Name', value: `${props.prefix}-private-a` }],
+      internetGatewayId: internetGateway.internetGatewayId,
+      internetGatewayAttachment: internetGateway.attachment,
+      publicSubnetIds: subnets.publicSubnetIds,
+      privateSubnetIds: subnets.privateSubnetIds,
     });
-    const privateSubnet2 = new ec2.CfnSubnet(this, 'PrivateSubnetB', {
+
+    const securityGroups = new ExplicitSecurityGroups(this, 'ExplicitSecurityGroups', {
+      prefix: props.prefix,
       vpcId: vpc.ref,
-      cidrBlock: '10.42.11.0/24',
-      availabilityZone: 'us-east-1b',
-      mapPublicIpOnLaunch: false,
-      tags: [{ key: 'Name', value: `${props.prefix}-private-b` }],
     });
-
-    const internetGateway = new ec2.CfnInternetGateway(
-      this,
-      'InternetGateway',
-      {
-        tags: [{ key: 'Name', value: `${props.prefix}-igw` }],
-      }
-    );
-
-    // Attach the IGW to the VPC before creating routes that depend on it
-    const internetGatewayAttachment = new ec2.CfnVPCGatewayAttachment(
-      this,
-      'InternetGatewayAttachment',
-      {
-        vpcId: vpc.ref,
-        internetGatewayId: internetGateway.ref,
-      }
-    );
-
-    // Create public route table to the VPC, this can connect to the internet
-    const publicRouteTable = new ec2.CfnRouteTable(this, 'PublicRouteTable', {
-      vpcId: vpc.ref,
-      tags: [{ key: 'Name', value: `${props.prefix}-public-rt` }],
-    });
-
-    // Create the private route table for private subnets in this VPC
-    const privateRouteTable = new ec2.CfnRouteTable(this, 'PrivateRouteTable', {
-      vpcId: vpc.ref,
-      tags: [{ key: 'Name', value: `${props.prefix}-private-rt` }],
-    });
-
-    // Create a route: traffic from public subnets -> 0.0.0.0/0 -> IGW in the public route table; this will lead to internet
-    const publicDefaultRoute = new ec2.CfnRoute(this, 'PublicDefaultRoute', {
-      routeTableId: publicRouteTable.ref,
-      gatewayId: internetGateway.ref,
-      destinationCidrBlock: '0.0.0.0/0',
-    });
-    publicDefaultRoute.addDependency(internetGatewayAttachment);
-
-    // Associate public subnets with the public route table
-    new ec2.CfnSubnetRouteTableAssociation(this, 'PublicSubnetAssocA', {
-      subnetId: publicSubnet1.ref,
-      routeTableId: publicRouteTable.ref,
-    });
-    new ec2.CfnSubnetRouteTableAssociation(this, 'PublicSubnetAssocB', {
-      subnetId: publicSubnet2.ref,
-      routeTableId: publicRouteTable.ref,
-    });
-
-    // Associate private subnets with the private route table
-    new ec2.CfnSubnetRouteTableAssociation(this, 'PrivateSubnetAssocA', {
-      subnetId: privateSubnet1.ref,
-      routeTableId: privateRouteTable.ref,
-    });
-    new ec2.CfnSubnetRouteTableAssociation(this, 'PrivateSubnetAssocB', {
-      subnetId: privateSubnet2.ref,
-      routeTableId: privateRouteTable.ref,
-    });
-
-    // allow traffic from anywhere to public subnets on port 80, and allow all outbound traffic from public subnets
-    const publicSecurityGroup = new ec2.CfnSecurityGroup(
-      this,
-      'PublicSecurityGroup',
-      {
-        groupDescription: 'Public ingress for local lab resources',
-        groupName: `${props.prefix}-public-sg`,
-        vpcId: vpc.ref,
-        securityGroupIngress: [
-          {
-            cidrIp: '0.0.0.0/0',
-            ipProtocol: 'tcp',
-            fromPort: 80,
-            toPort: 80,
-          },
-        ],
-        securityGroupEgress: [
-          {
-            cidrIp: '0.0.0.0/0',
-            ipProtocol: '-1',
-          },
-        ],
-        tags: [{ key: 'Name', value: `${props.prefix}-public-sg` }],
-      }
-    );
-
-    const appSecurityGroup = new ec2.CfnSecurityGroup(
-      this,
-      'AppSecurityGroup',
-      {
-        groupDescription: 'Application traffic for ECS workloads',
-        groupName: `${props.prefix}-app-sg`,
-        vpcId: vpc.ref,
-        // Support the second hop in the intended flow:
-        // internet -> public-facing resource/public SG -> app SG on TCP 80
-        // This improves security because the app layer is not opened to 0.0.0.0/0;
-        // only resources in the public-facing security group can reach it.
-        securityGroupIngress: [
-          {
-            sourceSecurityGroupId: publicSecurityGroup.attrGroupId,
-            ipProtocol: 'tcp',
-            fromPort: 80,
-            toPort: 80,
-          },
-        ],
-        securityGroupEgress: [
-          {
-            cidrIp: '0.0.0.0/0',
-            ipProtocol: '-1',
-          },
-        ],
-        tags: [{ key: 'Name', value: `${props.prefix}-app-sg` }],
-      }
-    );
 
     // Apply a shared Project tag to resources in this construct for grouping and identification.
     // Resources created with `this` as their parent are in this construct scope (e.g new ec2.CfnSecurityGroup(this, ...)), so CDK will try
@@ -242,13 +125,13 @@ export class ExplicitVpc extends Construct {
     Tags.of(this).add('Project', props.prefix);
 
     this.vpcId = vpc.ref;
-    this.publicSubnetIds = [publicSubnet1.ref, publicSubnet2.ref];
-    this.privateSubnetIds = [privateSubnet1.ref, privateSubnet2.ref];
-    this.publicRouteTableId = publicRouteTable.ref;
-    this.privateRouteTableId = privateRouteTable.ref;
-    this.internetGatewayId = internetGateway.ref;
-    this.publicSecurityGroupId = publicSecurityGroup.attrGroupId;
-    this.appSecurityGroupId = appSecurityGroup.attrGroupId;
+    this.publicSubnetIds = subnets.publicSubnetIds;
+    this.privateSubnetIds = subnets.privateSubnetIds;
+    this.publicRouteTableId = routeTables.publicRouteTableId;
+    this.privateRouteTableId = routeTables.privateRouteTableId;
+    this.internetGatewayId = internetGateway.internetGatewayId;
+    this.publicSecurityGroupId = securityGroups.publicSecurityGroupId;
+    this.appSecurityGroupId = securityGroups.appSecurityGroupId;
 
     /*
      * Output naming notes:
