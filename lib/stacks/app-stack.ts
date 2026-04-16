@@ -13,6 +13,7 @@ export interface FoundationReference {
 
 export interface AppStackProps extends StackProps {
   prefix: string;
+  enableEcsRuntime?: boolean;
   foundation: FoundationReference;
 }
 
@@ -20,14 +21,19 @@ export class AppStack extends Stack {
   constructor(scope: Construct, id: string, props: AppStackProps) {
     super(scope, id, props);
 
-    new ExplicitEcs(this, 'ExplicitEcs', {
-      prefix: props.prefix,
-    });
-
-    new ExplicitElb(this, 'ExplicitElb', {
+    const elb = new ExplicitElb(this, 'ExplicitElb', {
       prefix: props.prefix,
       subnetIds: props.foundation.publicSubnetIds,
       vpcId: props.foundation.vpcId,
+      enableListener: props.enableEcsRuntime,
+    });
+
+    new ExplicitEcs(this, 'ExplicitEcs', {
+      prefix: props.prefix,
+      enableService: props.enableEcsRuntime,
+      privateSubnetIds: props.foundation.privateSubnetIds,
+      appSecurityGroupId: props.foundation.appSecurityGroupId,
+      targetGroupArn: elb.targetGroup.targetGroupArn,
     });
 
     new CfnOutput(this, 'NetworkPlacement', {

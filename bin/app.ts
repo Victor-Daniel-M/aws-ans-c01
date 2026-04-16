@@ -10,6 +10,7 @@ const env = {
   region: process.env.CDK_DEFAULT_REGION ?? "us-east-1",
 };
 const prefix = "ansc01lab";
+const enableEcsRuntime = process.env.ENABLE_ECS_RUNTIME === "true";
 
 const stackProps = {
   env,
@@ -24,6 +25,7 @@ const foundationStack = new FoundationStack(app, "FoundationStack", {
 new AppStack(app, "AppStack", {
   ...stackProps,
   prefix,
+  enableEcsRuntime,
   foundation: {
     vpcId: foundationStack.vpc.vpcId,
     publicSubnetIds: foundationStack.vpc.publicSubnetIds,

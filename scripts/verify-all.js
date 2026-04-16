@@ -14,7 +14,10 @@ const {
   DescribeVpcsCommand,
 } = require("@aws-sdk/client-ec2");
 const { ECRClient, DescribeRepositoriesCommand } = require("@aws-sdk/client-ecr");
-const { ECSClient, DescribeClustersCommand } = require("@aws-sdk/client-ecs");
+const {
+  ECSClient,
+  DescribeClustersCommand,
+} = require("@aws-sdk/client-ecs");
 const {
   ElasticLoadBalancingV2Client,
   DescribeLoadBalancersCommand,
@@ -22,6 +25,7 @@ const {
 } = require("@aws-sdk/client-elastic-load-balancing-v2");
 const { HeadBucketCommand, S3Client } = require("@aws-sdk/client-s3");
 const { AWS_REGION, endpoint, withAwsEnv } = require("./_common");
+const enableEcsRuntime = process.env.ENABLE_ECS_RUNTIME === "true";
 
 const expected = {
   foundationStack: "FoundationStack",
@@ -29,6 +33,7 @@ const expected = {
   bucketName: "ansc01lab-artifacts",
   trailName: "ansc01lab-trail",
   clusterName: "ansc01lab-cluster",
+  serviceName: "ansc01lab-service",
   repositoryName: "ansc01lab-repo",
   loadBalancerName: "ansc01lab-nlb",
   targetGroupName: "ansc01lab-tg",
@@ -226,6 +231,20 @@ async function verifyEcs(ecsClient) {
     }
     console.log("Verified ECS cluster via CloudFormation resource fallback.");
   }
+
+  if (!enableEcsRuntime) {
+    return;
+  }
+
+  const hasService = await stackHasResource(
+    createClient(CloudFormationClient),
+    expected.appStack,
+    "AWS::ECS::Service",
+  );
+  if (!hasService) {
+    throw new Error("ECS service resource was not found in AppStack while ENABLE_ECS_RUNTIME=true.");
+  }
+  console.log("Verified ECS service via CloudFormation resource fallback.");
 }
 
 async function verifyEcr(ecrClient) {

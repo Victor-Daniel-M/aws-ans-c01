@@ -9,6 +9,7 @@ export interface ExplicitNlbProps {
 export class ExplicitNlb extends Construct {
   readonly loadBalancer: elbv2.CfnLoadBalancer;
   readonly loadBalancerName: string;
+  readonly loadBalancerArn: string;
 
   constructor(scope: Construct, id: string, props: ExplicitNlbProps) {
     super(scope, id);
@@ -21,6 +22,7 @@ export class ExplicitNlb extends Construct {
       subnets: props.subnetIds,
       type: "network",
     });
+    this.loadBalancerArn = this.loadBalancer.ref;
 
     new CfnOutput(this, "LoadBalancerName", {
       exportName: `${props.prefix}-LoadBalancerName`,

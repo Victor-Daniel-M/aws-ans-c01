@@ -9,6 +9,7 @@ export interface ExplicitTargetGroupProps {
 export class ExplicitTargetGroup extends Construct {
   readonly targetGroup: elbv2.CfnTargetGroup;
   readonly targetGroupName: string;
+  readonly targetGroupArn: string;
 
   constructor(scope: Construct, id: string, props: ExplicitTargetGroupProps) {
     super(scope, id);
@@ -17,11 +18,15 @@ export class ExplicitTargetGroup extends Construct {
 
     this.targetGroup = new elbv2.CfnTargetGroup(this, "TargetGroup", {
       name: this.targetGroupName,
-      port: 80,
+      port: 8080,
       protocol: "TCP",
       targetType: "ip",
       vpcId: props.vpcId,
+      healthCheckEnabled: true,
+      healthCheckProtocol: "TCP",
     });
+
+    this.targetGroupArn = this.targetGroup.ref;
 
     new CfnOutput(this, "TargetGroupName", {
       exportName: `${props.prefix}-TargetGroupName`,
