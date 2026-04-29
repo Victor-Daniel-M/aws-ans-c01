@@ -1,5 +1,7 @@
 import { CfnOutput, aws_ecs as ecs } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { OUTPUT_IDS } from "../constants/output-ids";
+import { RESOURCE_IDS } from "../constants/resource-ids";
 
 export interface ExplicitEcsServiceProps {
   prefix: string;
@@ -21,7 +23,7 @@ export class ExplicitEcsService extends Construct {
 
     this.serviceName = `${props.prefix}-service`;
 
-    this.service = new ecs.CfnService(this, "Service", {
+    this.service = new ecs.CfnService(this, RESOURCE_IDS.SERVICE, {
       serviceName: this.serviceName,
       cluster: props.clusterName,
       taskDefinition: props.taskDefinitionArn,
@@ -44,7 +46,7 @@ export class ExplicitEcsService extends Construct {
       ],
     });
 
-    new CfnOutput(this, "ServiceName", {
+    new CfnOutput(this, OUTPUT_IDS.SERVICE_NAME, {
       exportName: `${props.prefix}-ServiceName`,
       value: this.serviceName,
     });

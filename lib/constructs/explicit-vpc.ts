@@ -1,6 +1,9 @@
 import { CfnOutput, Fn, Tags } from 'aws-cdk-lib';
 import { aws_ec2 as ec2 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import { CONSTRUCT_IDS } from '../constants/construct-ids';
+import { OUTPUT_IDS } from '../constants/output-ids';
+import { RESOURCE_IDS } from '../constants/resource-ids';
 import { ExplicitInternetGateway } from './explicit-internet-gateway';
 import { ExplicitRouteTables } from './explicit-route-tables';
 import { ExplicitSecurityGroups } from './explicit-security-groups';
@@ -88,24 +91,24 @@ export class ExplicitVpc extends Construct {
   constructor(scope: Construct, id: string, props: ExplicitVpcProps) {
     super(scope, id);
 
-    const vpc = new ec2.CfnVPC(this, 'Vpc', {
+    const vpc = new ec2.CfnVPC(this, RESOURCE_IDS.VPC, {
       cidrBlock: '10.42.0.0/16',
       enableDnsHostnames: true,
       enableDnsSupport: true,
       tags: [{ key: 'Name', value: `${props.prefix}-vpc` }],
     });
 
-    const subnets = new ExplicitSubnets(this, 'ExplicitSubnets', {
+    const subnets = new ExplicitSubnets(this, CONSTRUCT_IDS.EXPLICIT_SUBNETS, {
       prefix: props.prefix,
       vpcId: vpc.ref,
     });
 
-    const internetGateway = new ExplicitInternetGateway(this, 'ExplicitInternetGateway', {
+    const internetGateway = new ExplicitInternetGateway(this, CONSTRUCT_IDS.EXPLICIT_INTERNET_GATEWAY, {
       prefix: props.prefix,
       vpcId: vpc.ref,
     });
 
-    const routeTables = new ExplicitRouteTables(this, 'ExplicitRouteTables', {
+    const routeTables = new ExplicitRouteTables(this, CONSTRUCT_IDS.EXPLICIT_ROUTE_TABLES, {
       prefix: props.prefix,
       vpcId: vpc.ref,
       internetGatewayId: internetGateway.internetGatewayId,
@@ -114,7 +117,7 @@ export class ExplicitVpc extends Construct {
       privateSubnetIds: subnets.privateSubnetIds,
     });
 
-    const securityGroups = new ExplicitSecurityGroups(this, 'ExplicitSecurityGroups', {
+    const securityGroups = new ExplicitSecurityGroups(this, CONSTRUCT_IDS.EXPLICIT_SECURITY_GROUPS, {
       prefix: props.prefix,
       vpcId: vpc.ref,
     });
@@ -136,40 +139,40 @@ export class ExplicitVpc extends Construct {
     /*
      * Output naming notes:
      *
-     * - The second parameter to `new CfnOutput(this, 'VpcIdOutput', ...)` is the CDK construct ID.
+     * - The second parameter to `new CfnOutput(this, OUTPUT_IDS.VPC_ID, ...)` is the CDK construct ID.
      * - CDK requires that ID so it can place this output in the construct tree under `this`.
      * - `this` is the current `ExplicitVpc` construct scope, so the output becomes a child in that scope.
-     * - CDK tracks the output by its scope + local ID + construct tree path, not just by the raw string `VpcIdOutput`.
+     * - CDK tracks the output by its scope + local ID + construct tree path, not just by the raw string in `OUTPUT_IDS.VPC_ID`.
      * - During synthesis, CDK turns that path into a generated CloudFormation logical ID, often with extra suffix text for stability and uniqueness.
      * - `exportName` is different: it is the public CloudFormation export name that other stacks or templates can import.
-     * - So `VpcIdOutput` is the internal CDK/CloudFormation construct ID, while `${props.prefix}-VpcId` is the external export label.
+     * - So `OUTPUT_IDS.VPC_ID` is the internal CDK/CloudFormation construct ID, while `${props.prefix}-VpcId` is the external export label.
      */
-    new CfnOutput(this, 'VpcIdOutput', {
+    new CfnOutput(this, OUTPUT_IDS.VPC_ID, {
       exportName: `${props.prefix}-VpcId`,
       value: this.vpcId,
     });
 
-    new CfnOutput(this, 'PublicSubnetIdsOutput', {
+    new CfnOutput(this, OUTPUT_IDS.PUBLIC_SUBNET_IDS, {
       exportName: `${props.prefix}-PublicSubnetIds`,
       value: Fn.join(',', this.publicSubnetIds),
     });
 
-    new CfnOutput(this, 'PrivateSubnetIdsOutput', {
+    new CfnOutput(this, OUTPUT_IDS.PRIVATE_SUBNET_IDS, {
       exportName: `${props.prefix}-PrivateSubnetIds`,
       value: Fn.join(',', this.privateSubnetIds),
     });
 
-    new CfnOutput(this, 'RouteTableIdsOutput', {
+    new CfnOutput(this, OUTPUT_IDS.ROUTE_TABLE_IDS, {
       exportName: `${props.prefix}-RouteTableIds`,
       value: Fn.join(',', [this.publicRouteTableId, this.privateRouteTableId]),
     });
 
-    new CfnOutput(this, 'InternetGatewayIdOutput', {
+    new CfnOutput(this, OUTPUT_IDS.INTERNET_GATEWAY_ID, {
       exportName: `${props.prefix}-InternetGatewayId`,
       value: this.internetGatewayId,
     });
 
-    new CfnOutput(this, 'SecurityGroupIdsOutput', {
+    new CfnOutput(this, OUTPUT_IDS.SECURITY_GROUP_IDS, {
       exportName: `${props.prefix}-SecurityGroupIds`,
       value: Fn.join(',', [
         this.publicSecurityGroupId,

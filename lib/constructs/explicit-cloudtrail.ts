@@ -1,5 +1,7 @@
 import { CfnOutput, aws_cloudtrail as cloudtrail, aws_s3 as s3 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import { OUTPUT_IDS } from '../constants/output-ids';
+import { RESOURCE_IDS } from '../constants/resource-ids';
 
 export interface ExplicitCloudTrailProps {
   prefix: string;
@@ -18,7 +20,7 @@ export class ExplicitCloudTrail extends Construct {
     this.trailName = `${props.prefix}-trail`;
 
     // Create a trail to record AWS API activity and deliver the logs to the S3 bucket.
-    this.trail = new cloudtrail.CfnTrail(this, 'Trail', {
+    this.trail = new cloudtrail.CfnTrail(this, RESOURCE_IDS.TRAIL, {
       // Start logging as soon as the trail is created.
       isLogging: true,
       // Keep the lab trail scoped to the configured region instead of all regions.
@@ -33,7 +35,7 @@ export class ExplicitCloudTrail extends Construct {
     this.trail.node.addDependency(props.bucket);
 
     // Export the trail name so it can be referenced outside this construct if needed.
-    new CfnOutput(this, 'TrailName', {
+    new CfnOutput(this, OUTPUT_IDS.TRAIL_NAME, {
       exportName: `${props.prefix}-TrailName`,
       value: this.trailName,
     });

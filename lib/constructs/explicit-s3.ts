@@ -1,5 +1,7 @@
 import { CfnOutput, RemovalPolicy, aws_s3 as s3 } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { OUTPUT_IDS } from "../constants/output-ids";
+import { RESOURCE_IDS } from "../constants/resource-ids";
 
 export interface ExplicitS3Props {
   prefix: string;
@@ -16,7 +18,7 @@ export class ExplicitS3 extends Construct {
     // Derive a predictable bucket name from the shared lab prefix.
     this.bucketName = `${props.prefix}-artifacts`;
 
-    this.bucket = new s3.CfnBucket(this, "Bucket", {
+    this.bucket = new s3.CfnBucket(this, RESOURCE_IDS.BUCKET, {
       // Use an explicit bucket name so the lab resource is predictable.
       bucketName: this.bucketName,
       // Block public access through ACLs and bucket policies.
@@ -40,7 +42,7 @@ export class ExplicitS3 extends Construct {
     this.bucket.applyRemovalPolicy(RemovalPolicy.DESTROY);
 
     // Export the bucket name so it can be referenced outside this construct if needed.
-    new CfnOutput(this, "BucketName", {
+    new CfnOutput(this, OUTPUT_IDS.BUCKET_NAME, {
       exportName: `${props.prefix}-BucketName`,
       value: this.bucketName,
     });

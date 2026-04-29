@@ -1,5 +1,6 @@
 import { aws_ec2 as ec2 } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { RESOURCE_IDS } from "../constants/resource-ids";
 
 export interface ExplicitSecurityGroupsProps {
   prefix: string;
@@ -14,7 +15,7 @@ export class ExplicitSecurityGroups extends Construct {
     super(scope, id);
 
     // Allow traffic from anywhere to the public-facing layer on port 80, and allow all outbound traffic.
-    const publicSecurityGroup = new ec2.CfnSecurityGroup(this, "PublicSecurityGroup", {
+    const publicSecurityGroup = new ec2.CfnSecurityGroup(this, RESOURCE_IDS.PUBLIC_SECURITY_GROUP, {
       groupDescription: "Public ingress for local lab resources",
       groupName: `${props.prefix}-public-sg`,
       vpcId: props.vpcId,
@@ -35,7 +36,7 @@ export class ExplicitSecurityGroups extends Construct {
       tags: [{ key: "Name", value: `${props.prefix}-public-sg` }],
     });
 
-    const appSecurityGroup = new ec2.CfnSecurityGroup(this, "AppSecurityGroup", {
+    const appSecurityGroup = new ec2.CfnSecurityGroup(this, RESOURCE_IDS.APP_SECURITY_GROUP, {
       groupDescription: "Application traffic for ECS workloads",
       groupName: `${props.prefix}-app-sg`,
       vpcId: props.vpcId,

@@ -1,5 +1,7 @@
 import { CfnOutput, aws_ecs as ecs } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { OUTPUT_IDS } from "../constants/output-ids";
+import { RESOURCE_IDS } from "../constants/resource-ids";
 
 export interface ExplicitClusterProps {
   prefix: string;
@@ -14,7 +16,7 @@ export class ExplicitCluster extends Construct {
 
     this.clusterName = `${props.prefix}-cluster`;
 
-    this.cluster = new ecs.CfnCluster(this, "Cluster", {
+    this.cluster = new ecs.CfnCluster(this, RESOURCE_IDS.CLUSTER, {
       clusterName: this.clusterName,
       clusterSettings: [
         {
@@ -24,7 +26,7 @@ export class ExplicitCluster extends Construct {
       ],
     });
 
-    new CfnOutput(this, "ClusterName", {
+    new CfnOutput(this, OUTPUT_IDS.CLUSTER_NAME, {
       exportName: `${props.prefix}-ClusterName`,
       value: this.cluster.clusterName ?? this.clusterName,
     });

@@ -1,5 +1,7 @@
 import { CfnOutput, aws_ecs as ecs } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { OUTPUT_IDS } from "../constants/output-ids";
+import { RESOURCE_IDS } from "../constants/resource-ids";
 
 export interface ExplicitTaskDefinitionProps {
   prefix: string;
@@ -20,7 +22,7 @@ export class ExplicitTaskDefinition extends Construct {
 
     // Run a tiny TCP app inside a public Node image so the local lab has
     // something concrete for the ECS service and target group to point at.
-    this.taskDefinition = new ecs.CfnTaskDefinition(this, "TaskDefinition", {
+    this.taskDefinition = new ecs.CfnTaskDefinition(this, RESOURCE_IDS.TASK_DEFINITION, {
       family: this.family,
       cpu: "256",
       memory: "512",
@@ -47,7 +49,7 @@ export class ExplicitTaskDefinition extends Construct {
       ],
     });
 
-    new CfnOutput(this, "TaskDefinitionFamily", {
+    new CfnOutput(this, OUTPUT_IDS.TASK_DEFINITION_FAMILY, {
       exportName: `${props.prefix}-TaskDefinitionFamily`,
       value: this.family,
     });

@@ -1,4 +1,5 @@
 import { Construct } from "constructs";
+import { CONSTRUCT_IDS } from "../constants/construct-ids";
 import { ExplicitCluster } from "./explicit-cluster";
 import { ExplicitEcsService } from "./explicit-ecs-service";
 import { ExplicitEcr } from "./explicit-ecr";
@@ -21,11 +22,11 @@ export class ExplicitEcs extends Construct {
   constructor(scope: Construct, id: string, props: ExplicitEcsProps) {
     super(scope, id);
 
-    this.cluster = new ExplicitCluster(this, "ExplicitCluster", {
+    this.cluster = new ExplicitCluster(this, CONSTRUCT_IDS.EXPLICIT_CLUSTER, {
       prefix: props.prefix,
     });
 
-    this.repository = new ExplicitEcr(this, "ExplicitEcr", {
+    this.repository = new ExplicitEcr(this, CONSTRUCT_IDS.EXPLICIT_ECR, {
       prefix: props.prefix,
     });
 
@@ -36,11 +37,11 @@ export class ExplicitEcs extends Construct {
         );
       }
 
-      this.taskDefinition = new ExplicitTaskDefinition(this, "ExplicitTaskDefinition", {
+      this.taskDefinition = new ExplicitTaskDefinition(this, CONSTRUCT_IDS.EXPLICIT_TASK_DEFINITION, {
         prefix: props.prefix,
       });
 
-      this.service = new ExplicitEcsService(this, "ExplicitEcsService", {
+      this.service = new ExplicitEcsService(this, CONSTRUCT_IDS.EXPLICIT_ECS_SERVICE, {
         prefix: props.prefix,
         clusterName: this.cluster.clusterName,
         taskDefinitionArn: this.taskDefinition.taskDefinition.ref,

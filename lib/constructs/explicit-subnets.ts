@@ -1,5 +1,6 @@
 import { aws_ec2 as ec2 } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { RESOURCE_IDS } from "../constants/resource-ids";
 
 export interface ExplicitSubnetsProps {
   prefix: string;
@@ -14,14 +15,14 @@ export class ExplicitSubnets extends Construct {
     super(scope, id);
 
     // Public subnets
-    const publicSubnet1 = new ec2.CfnSubnet(this, "PublicSubnetA", {
+    const publicSubnet1 = new ec2.CfnSubnet(this, RESOURCE_IDS.PUBLIC_SUBNET_A, {
       vpcId: props.vpcId,
       cidrBlock: "10.42.0.0/24",
       availabilityZone: "us-east-1a",
       mapPublicIpOnLaunch: true,
       tags: [{ key: "Name", value: `${props.prefix}-public-a` }],
     });
-    const publicSubnet2 = new ec2.CfnSubnet(this, "PublicSubnetB", {
+    const publicSubnet2 = new ec2.CfnSubnet(this, RESOURCE_IDS.PUBLIC_SUBNET_B, {
       vpcId: props.vpcId,
       cidrBlock: "10.42.1.0/24",
       availabilityZone: "us-east-1b",
@@ -30,14 +31,14 @@ export class ExplicitSubnets extends Construct {
     });
 
     // Private subnets
-    const privateSubnet1 = new ec2.CfnSubnet(this, "PrivateSubnetA", {
+    const privateSubnet1 = new ec2.CfnSubnet(this, RESOURCE_IDS.PRIVATE_SUBNET_A, {
       vpcId: props.vpcId,
       cidrBlock: "10.42.10.0/24",
       availabilityZone: "us-east-1a",
       mapPublicIpOnLaunch: false,
       tags: [{ key: "Name", value: `${props.prefix}-private-a` }],
     });
-    const privateSubnet2 = new ec2.CfnSubnet(this, "PrivateSubnetB", {
+    const privateSubnet2 = new ec2.CfnSubnet(this, RESOURCE_IDS.PRIVATE_SUBNET_B, {
       vpcId: props.vpcId,
       cidrBlock: "10.42.11.0/24",
       availabilityZone: "us-east-1b",

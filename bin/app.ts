@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from "aws-cdk-lib";
+import { CONSTRUCT_IDS } from "../lib/constants/construct-ids";
 import { AppStack } from "../lib/stacks/app-stack";
 import { FoundationStack } from "../lib/stacks/foundation-stack";
 
@@ -17,12 +18,12 @@ const stackProps = {
   synthesizer: new cdk.BootstraplessSynthesizer(),
 };
 
-const foundationStack = new FoundationStack(app, "FoundationStack", {
+const foundationStack = new FoundationStack(app, CONSTRUCT_IDS.FOUNDATION_STACK, {
   ...stackProps,
   prefix,
 });
 
-new AppStack(app, "AppStack", {
+new AppStack(app, CONSTRUCT_IDS.APP_STACK, {
   ...stackProps,
   prefix,
   enableEcsRuntime,

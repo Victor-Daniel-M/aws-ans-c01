@@ -1,5 +1,7 @@
 import { CfnOutput, Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+import { CONSTRUCT_IDS } from '../constants/construct-ids';
+import { OUTPUT_IDS } from '../constants/output-ids';
 import { ExplicitEcs } from '../constructs/explicit-ecs';
 import { ExplicitElb } from '../constructs/explicit-elb';
 
@@ -21,14 +23,14 @@ export class AppStack extends Stack {
   constructor(scope: Construct, id: string, props: AppStackProps) {
     super(scope, id, props);
 
-    const elb = new ExplicitElb(this, 'ExplicitElb', {
+    const elb = new ExplicitElb(this, CONSTRUCT_IDS.EXPLICIT_ELB, {
       prefix: props.prefix,
       subnetIds: props.foundation.publicSubnetIds,
       vpcId: props.foundation.vpcId,
       enableListener: props.enableEcsRuntime,
     });
 
-    new ExplicitEcs(this, 'ExplicitEcs', {
+    new ExplicitEcs(this, CONSTRUCT_IDS.EXPLICIT_ECS, {
       prefix: props.prefix,
       enableService: props.enableEcsRuntime,
       privateSubnetIds: props.foundation.privateSubnetIds,
@@ -36,7 +38,7 @@ export class AppStack extends Stack {
       targetGroupArn: elb.targetGroup.targetGroupArn,
     });
 
-    new CfnOutput(this, 'NetworkPlacement', {
+    new CfnOutput(this, OUTPUT_IDS.NETWORK_PLACEMENT, {
       exportName: `${props.prefix}-NetworkPlacement`,
       value: [
         props.foundation.vpcId,

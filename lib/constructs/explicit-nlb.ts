@@ -1,5 +1,7 @@
 import { CfnOutput, aws_elasticloadbalancingv2 as elbv2 } from "aws-cdk-lib";
 import { Construct } from "constructs";
+import { OUTPUT_IDS } from "../constants/output-ids";
+import { RESOURCE_IDS } from "../constants/resource-ids";
 
 export interface ExplicitNlbProps {
   prefix: string;
@@ -16,7 +18,7 @@ export class ExplicitNlb extends Construct {
 
     this.loadBalancerName = `${props.prefix}-nlb`;
 
-    this.loadBalancer = new elbv2.CfnLoadBalancer(this, "NetworkLoadBalancer", {
+    this.loadBalancer = new elbv2.CfnLoadBalancer(this, RESOURCE_IDS.NETWORK_LOAD_BALANCER, {
       name: this.loadBalancerName,
       scheme: "internet-facing",
       subnets: props.subnetIds,
@@ -24,7 +26,7 @@ export class ExplicitNlb extends Construct {
     });
     this.loadBalancerArn = this.loadBalancer.ref;
 
-    new CfnOutput(this, "LoadBalancerName", {
+    new CfnOutput(this, OUTPUT_IDS.LOAD_BALANCER_NAME, {
       exportName: `${props.prefix}-LoadBalancerName`,
       value: this.loadBalancerName,
     });
