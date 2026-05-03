@@ -1,5 +1,5 @@
 paysim.csv
 paysim_exploration_dataset.csv
 paysim_selected_figures/
-*.docx
+# *.docx
 .ipynb_checkpoints/

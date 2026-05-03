@@ -12,6 +12,8 @@ The analysis uses the PaySim transaction data as loaded in the notebook `paysim_
 
 Basic data preparation focused on ensuring the dataset was suitable for interpretation. Duplicate checking showed that there were no duplicate rows, and missing-value inspection returned zero null values across the dataset. The notebook also includes a balance-validation diagnostic that compares expected sender and receiver balances with observed post-transaction balances. This step was used as a data-quality check rather than as a standalone finding.
 
+The notebook was also used to produce an updated exploration-ready version of the dataset so that the data could be worked with more easily in Tableau. This was necessary because the raw CSV supports basic analysis, but it does not contain several derived variables needed for convenient visual exploration in Tableau, especially for sequence-based analysis such as identifying the `next_type` of transaction for each account. For that reason, notebook-derived fields such as `next_type`, `prev_type`, `transaction_index`, `time_gap`, balance-error measures, mismatch measures, `log_amount`, and `amount_quantile` were created and exported as an enriched dataset. This made it easier to reproduce and extend the notebook findings in Tableau, particularly for transaction-type sequence patterns and related fraud-focused visualizations.
+
 ## Exploratory Findings
 
 ### 1. Fraud Is Extremely Rare
