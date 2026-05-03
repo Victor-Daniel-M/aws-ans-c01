@@ -1,3 +1,9 @@
+node_modules/
+cdk.out/
+dist/
+.env
+.DS_Store
+
 paysim.csv
 paysim_exploration_dataset.csv
 paysim_selected_figures/

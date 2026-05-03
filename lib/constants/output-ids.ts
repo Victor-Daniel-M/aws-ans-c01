@@ -1,0 +1,17 @@
+export const OUTPUT_IDS = {
+  VPC_ID: "VpcIdOutput",
+  PUBLIC_SUBNET_IDS: "PublicSubnetIdsOutput",
+  PRIVATE_SUBNET_IDS: "PrivateSubnetIdsOutput",
+  ROUTE_TABLE_IDS: "RouteTableIdsOutput",
+  INTERNET_GATEWAY_ID: "InternetGatewayIdOutput",
+  SECURITY_GROUP_IDS: "SecurityGroupIdsOutput",
+  BUCKET_NAME: "BucketName",
+  TRAIL_NAME: "TrailName",
+  CLUSTER_NAME: "ClusterName",
+  REPOSITORY_NAME: "RepositoryName",
+  LOAD_BALANCER_NAME: "LoadBalancerName",
+  TARGET_GROUP_NAME: "TargetGroupName",
+  TASK_DEFINITION_FAMILY: "TaskDefinitionFamily",
+  SERVICE_NAME: "ServiceName",
+  NETWORK_PLACEMENT: "NetworkPlacement",
+} as const;
