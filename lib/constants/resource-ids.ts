@@ -3,6 +3,7 @@ export const RESOURCE_IDS = {
   INTERNET_GATEWAY: "InternetGateway",
   INTERNET_GATEWAY_ATTACHMENT: "InternetGatewayAttachment",
   BUCKET: "Bucket",
+  BUCKET_POLICY: "BucketPolicy",
   TRAIL: "Trail",
   CLUSTER: "Cluster",
   REPOSITORY: "Repository",

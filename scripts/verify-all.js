@@ -24,7 +24,7 @@ const {
   DescribeTargetGroupsCommand,
 } = require("@aws-sdk/client-elastic-load-balancing-v2");
 const { HeadBucketCommand, S3Client } = require("@aws-sdk/client-s3");
-const { AWS_REGION, endpoint, withAwsEnv } = require("./_common");
+const { AWS_REGION, DEPLOY_TARGET, endpoint, isLocalStackTarget, withAwsEnv } = require("./_common");
 const enableEcsRuntime = process.env.ENABLE_ECS_RUNTIME === "true";
 
 const expected = {
@@ -85,14 +85,20 @@ async function verifyLocalStackHealth() {
 }
 
 function createClient(Client) {
+  if (isLocalStackTarget) {
+    return new Client({
+      region: AWS_REGION,
+      endpoint,
+      credentials: {
+        accessKeyId: withAwsEnv().AWS_ACCESS_KEY_ID,
+        secretAccessKey: withAwsEnv().AWS_SECRET_ACCESS_KEY,
+      },
+      forcePathStyle: true,
+    });
+  }
+
   return new Client({
     region: AWS_REGION,
-    endpoint,
-    credentials: {
-      accessKeyId: withAwsEnv().AWS_ACCESS_KEY_ID,
-      secretAccessKey: withAwsEnv().AWS_SECRET_ACCESS_KEY,
-    },
-    forcePathStyle: true,
   });
 }
 
@@ -327,7 +333,9 @@ async function verifyElb(elbClient) {
 }
 
 async function main() {
-  await verifyLocalStackHealth();
+  if (isLocalStackTarget) {
+    await verifyLocalStackHealth();
+  }
 
   const cloudFormation = createClient(CloudFormationClient);
   const cloudTrail = createClient(CloudTrailClient);
@@ -345,7 +353,7 @@ async function main() {
   await verifyEcr(ecr);
   await verifyElb(elb);
 
-  console.log("All verification checks passed.");
+  console.log(`All ${DEPLOY_TARGET} verification checks passed.`);
 }
 
 main().catch((error) => {
